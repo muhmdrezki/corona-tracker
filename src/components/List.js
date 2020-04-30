@@ -40,7 +40,8 @@ export class List extends Component {
       latest_graph_recovered : {
         labels: [],
         datasets: []
-      }
+      },
+      all_coordinates: []
     }
   }
 
@@ -131,9 +132,6 @@ export class List extends Component {
   }
 
   render() {
-    const data = {
-      
-    };
     return (
       <div style={{padding:'1%',marginTop:"0.5%"}}>
         <Row>
@@ -191,12 +189,12 @@ export class List extends Component {
                   url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                   attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
                 />
-                { this.state.pop ? <Marker
-                    position={[
-                      this.state.lat,
-                      this.state.lng
-                    ]}
-                /> : '' }
+                { this.state.loaded ? this.props.locations.map(el => (
+                      <Marker key={el.id} position={[
+                        el.coordinates.latitude, el.coordinates.longitude
+                      ]}/>
+                    ))
+                : '' }
                 { this.state.pop ? <Popup
                   position={[
                     this.state.lat,
@@ -211,8 +209,7 @@ export class List extends Component {
                     <span>Deaths:{this.state.deaths}</span> <br/>
                     <span>Recovered:{this.state.recovered}</span>
                   </div>
-                </Popup>
-                  : '' }
+                </Popup> : '' }
               </Map>
             </div>
           </Col>

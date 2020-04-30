@@ -6,9 +6,13 @@ import { fetchLocations, filterLocation } from '../redux/actions/index';
 // Bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 //Bootstrap Components
-import { Table, Spinner, Row, Col, Tabs, Tab, Form } from 'react-bootstrap';
+import { Table, Spinner, Row, Col, Card, Form } from 'react-bootstrap';
 // leaflets
 import { Map, Marker, Popup, TileLayer } from "react-leaflet";
+// chart JS
+import { Line } from 'react-chartjs-2';
+// moment js
+var moment = require('moment');
 
 export class List extends Component {
 
@@ -25,6 +29,18 @@ export class List extends Component {
       confirmed: 0,
       deaths: 0,
       recovered: 0,
+      latest_graph_confirmed : {
+        labels: [],
+        datasets: []
+      },
+      latest_graph_deaths : {
+        labels: [],
+        datasets: []
+      },
+      latest_graph_recovered : {
+        labels: [],
+        datasets: []
+      }
     }
   }
 
@@ -45,36 +61,170 @@ export class List extends Component {
       zoom: 5,
       confirmed: data.latest.confirmed,
       deaths: data.latest.deaths,
-      recovered: data.latest.recovered
+      recovered: data.latest.recovered,
     });
-    console.log(data);
+    this._handleChange(data.id, 'getdata');
   }
   
-  _handleChange = (id) => {
+  _handleChange = (id, state) => {
     this.setState({ loaded: false });
-    this.props.filterLocation(id).then(res => {
-      if(this.props) {
-        this.setState({ loaded: true, filter: true });
-        this.getData(this.props.location);
-      }
-    });
+    if(id === "") {
+      this.props.fetchLocations().then(res => {
+        if(this.props) {
+          this.setState({ 
+            id: null,
+            loaded: true,
+            filter: false,
+            pop: false,
+            lat: 51.505,
+            lng: -0.09,
+            zoom: 2
+          });
+        }
+      });
+    } else {
+      this.props.filterLocation(id).then(res => {
+        if(this.props) {
+          this.setState({ loaded: true, filter: true });
+          this.setState({ selectLocation: this.props.location.id });
+          let labels_confirmed, labels_confirmed_formatted = []; 
+          let labels_deaths, labels_deaths_formatted = [];
+          let labels_recovered, labels_recovered_formatted = [];
+          labels_confirmed = Object.keys(this.props.location.timelines.confirmed.timeline);
+          labels_confirmed.map((el) => {
+            labels_confirmed_formatted.push(moment(el).format('ll'));
+          });
+          labels_deaths = Object.keys(this.props.location.timelines.deaths.timeline);
+          labels_deaths.map((el) => {
+            labels_deaths_formatted.push(moment(el).format('ll'));
+          });
+          labels_recovered = Object.keys(this.props.location.timelines.recovered.timeline);
+          labels_recovered.map((el) => {
+            labels_recovered_formatted.push(moment(el).format('ll'));
+          });
+          this.setState({ 
+            latest_graph_confirmed: {
+              labels: labels_confirmed_formatted,
+              datasets: [
+                { label: 'Confirmed',data: Object.values(this.props.location.timelines.confirmed.timeline) }
+              ]
+            },
+            latest_graph_deaths: {
+              labels: labels_deaths_formatted,
+              datasets: [
+                { label: 'Deaths',data: Object.values(this.props.location.timelines.deaths.timeline) }
+              ]
+            },
+            latest_graph_recovered: {
+              labels: labels_recovered_formatted,
+              datasets: [
+                { label: 'Recovered',data: Object.values(this.props.location.timelines.recovered.timeline) }
+              ]
+            }
+          });
+          if(state !== 'getdata') {
+            this.getData(this.props.location);
+          }
+        }
+      });
+    }
   }
 
   render() {
+    const data = {
+      
+    };
     return (
       <div style={{padding:'1%',marginTop:"0.5%"}}>
-        <h2> Corona (Covid-19) Tracker </h2>
-        <hr/>
         <Row>
-          <Col lg={5} md={5} sm={12} xs={12}>
-            <Form.Label>Cari Negara</Form.Label>
-            <Form.Control as="select" custom className="formControl" defaultValue={this.state.selectLocation} onChange={(e) => this._handleChange(e.target.value)} >
-              <option> Pilih </option>
-              { this.state.loaded ? this.props.locations.map(el => (
-                <option key={el.id} value={el.id}>{el.country}{ el.province ? ' - '+el.province : '' }</option>
-              )) : <option> No Data </option> }
-            </Form.Control>
-            { !this.state.filter ? <div style={{ height:"420px", overflowY: "auto", marginTop: "10px"}}>
+          <Col lg={3} md={3} sm={12} xs={12}>
+            <Card>
+              <Card.Body>
+                <h5> Coronavirus (COVID-19) </h5>
+                <hr/>
+                <Form.Group>
+                  <Form.Control as="select" custom className="formControl" value={this.state.selectLocation} onChange={(e) => this._handleChange(e.target.value)} >
+                    <option value=""> Worldwide </option>
+                    { this.state.loaded ? this.props.locations.map(el => (
+                      <option key={el.id} value={el.id}>{el.country}{ el.province ? ' - '+el.province : '' }</option>
+                    )) : <option> No Data </option> }
+                  </Form.Control>
+                </Form.Group>
+                <hr/>
+                { !this.state.filter ? 
+                  this.state.loaded ? <Row>
+                    <Col lg={4}>
+                      <small className="textMuted">Confirmed</small>
+                      <h6>{this.props.latest.confirmed}</h6>
+                    </Col>
+                    <Col lg={4}>
+                      <small className="textMuted">Deaths</small>
+                      <h6>{this.props.latest.deaths}</h6>
+                    </Col>
+                    <Col lg={4}>
+                      <small className="textMuted">Recovered</small>
+                      <h6>{this.props.latest.recovered}</h6>
+                    </Col>
+                  </Row> : <div><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner><h5>Please Wait...</h5></div>
+                : this.state.loaded ? <Row>
+                    <Col lg={4}>
+                      <small className="textMuted">Confirmed</small>
+                      <h6>{this.props.location.latest.confirmed}</h6>
+                    </Col>
+                    <Col lg={4}>
+                      <small className="textMuted">Deaths</small>
+                      <h6>{this.props.location.latest.deaths}</h6>
+                    </Col>
+                    <Col lg={4}>
+                      <small className="textMuted">Recovered</small>
+                      <h6>{this.props.location.latest.recovered}</h6>
+                    </Col>
+                  </Row> : <div><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner><h5>Please Wait...</h5></div>
+                }
+              </Card.Body>
+            </Card>
+          </Col>
+          <Col lg={9} md={9} sm={12} xs={12}> 
+            <div>
+              <Map center={[this.state.lat, this.state.lng]} zoom={this.state.zoom}>
+                <TileLayer
+                  url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                  attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
+                />
+                { this.state.pop ? <Marker
+                    position={[
+                      this.state.lat,
+                      this.state.lng
+                    ]}
+                /> : '' }
+                { this.state.pop ? <Popup
+                  position={[
+                    this.state.lat,
+                    this.state.lng
+                  ]}
+                  onClose={() => {
+                    this.setState({pop:false})
+                  }}
+                >
+                  <div>
+                    <span>Confirmed:{this.state.confirmed}</span> <br/>
+                    <span>Deaths:{this.state.deaths}</span> <br/>
+                    <span>Recovered:{this.state.recovered}</span>
+                  </div>
+                </Popup>
+                  : '' }
+              </Map>
+            </div>
+          </Col>
+        </Row>
+        <hr/>
+        <div className="text-center">
+          <h4> CASES </h4>
+        </div>
+        <Row>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
+          <Col lg={8} md={8} sm={12} xs={12}>            
+            { !this.state.filter ? <div style={{ height:"420px", overflowY: "auto", marginTop: "12px"}}>
               <Table size="sm" bordered striped hover>
                 <thead>
                   <tr>
@@ -82,6 +232,7 @@ export class List extends Component {
                     <th> Confirmed </th>
                     <th> Deaths </th>
                     <th> Recovered </th>
+                    <th> Last Update </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -91,8 +242,9 @@ export class List extends Component {
                       <td>{el.latest.confirmed}</td>
                       <td>{el.latest.deaths}</td>
                       <td>{el.latest.recovered}</td>
+                      <td>{el.last_updated}</td>
                     </tr>
-                  ))  : <tr><td colSpan="4" align="center"><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner></td></tr>}
+                  ))  : <tr><td colSpan="5" align="center"><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner></td></tr>}
                 </tbody>
               </Table>
             </div> : <Table size="sm" bordered striped hover style={{ marginTop: "10px"}}>
@@ -102,6 +254,7 @@ export class List extends Component {
                     <th> Confirmed </th>
                     <th> Deaths </th>
                     <th> Recovered </th>
+                    <th> Last Update </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -111,50 +264,36 @@ export class List extends Component {
                       <td>{this.props.location.latest.confirmed}</td>
                       <td>{this.props.location.latest.deaths}</td>
                       <td>{this.props.location.latest.recovered}</td>
+                      <td>{this.props.location.last_updated}</td>
                     </tr>
-                  : <tr><td colSpan="4" align="center"><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner></td></tr>}
+                  : <tr><td colSpan="5" align="center"><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner></td></tr>}
                 </tbody>
-              </Table> }
+                </Table> }
           </Col>
-          <Col lg={7} md={7} sm={12} xs={12}>
-          <Tabs defaultActiveKey="map" id="uncontrolled-tab-example">
-            <Tab eventKey="map" title="World Map">
-              <div style={{padding: "1%"}}>
-                <Map center={[this.state.lat, this.state.lng]} zoom={this.state.zoom}>
-                  <TileLayer
-                    url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-                    attribution='&copy; <a href="http://osm.org/copyright">OpenStreetMap</a> contributors'
-                  />
-                  { this.state.pop ? <Marker
-                      position={[
-                        this.state.lat,
-                        this.state.lng
-                      ]}
-                  /> : '' }
-                  { this.state.pop ? <Popup
-                    position={[
-                      this.state.lat,
-                      this.state.lng
-                    ]}
-                    onClose={() => {
-                      this.setState({pop:false})
-                    }}
-                  >
-                    <div>
-                      <span>Confirmed:{this.state.confirmed}</span> <br/>
-                      <span>Deaths:{this.state.deaths}</span> <br/>
-                      <span>Recovered:{this.state.recovered}</span>
-                    </div>
-                  </Popup>
-                   : '' }
-                </Map>
-              </div>
-            </Tab>
-            <Tab eventKey="statistic" title="Statistic">
-              <h6>Here are graph</h6>
-            </Tab>
-          </Tabs>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
+        </Row>
+        <hr/>
+        <h5 className="text-center"> MORE STATS (CHOOSE COUNTRY FIRST)</h5>
+        <Row style={{marginTop:"20px", height:"300px"}}>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
+          <Col lg={8} md={8} sm={12} xs={12}>
+            { this.state.loaded ? <Line data={this.state.latest_graph_confirmed} options={{ maintainAspectRatio: false }} redraw/> : ''}
           </Col>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
+        </Row>
+        <Row style={{marginTop:"20px", height:"300px"}}>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
+          <Col lg={8} md={8} sm={12} xs={12}>
+            { this.state.loaded ? <Line data={this.state.latest_graph_deaths} options={{ maintainAspectRatio: false }} redraw/> : ''}
+          </Col>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
+        </Row>
+        <Row style={{marginTop:"20px", height:"300px"}}>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
+          <Col lg={8} md={8} sm={12} xs={12}>
+            { this.state.loaded ? <Line data={this.state.latest_graph_recovered} options={{ maintainAspectRatio: false }} redraw/> : ''}
+          </Col>
+          <Col lg={2} md={2} sm={12} xs={12}></Col>
         </Row>
       </div>
     );
@@ -164,7 +303,8 @@ export class List extends Component {
 function mapStateToProps(state) {
   return {
     locations: state.locations,
-    location: state.location
+    location: state.location,
+    latest: state.latest
   };
 }
 

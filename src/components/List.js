@@ -281,7 +281,7 @@ export class List extends Component {
         <hr/>
         <h5 className="text-center"> MORE STATS (CHOOSE COUNTRY FIRST)</h5>
         {/* Chart START */}
-        <Row style={{marginTop:"20px", height:"300px"}}>
+        { this.state.filter ? <div><Row style={{marginTop:"20px", height:"300px"}}>
           <Col lg={2} md={2} sm={12} xs={12}></Col>
           <Col lg={8} md={8} sm={12} xs={12}>
             { this.state.loaded ? <Line data={this.state.latest_graph_confirmed} options={{ maintainAspectRatio: false }} redraw/> : ''}
@@ -301,7 +301,7 @@ export class List extends Component {
             { this.state.loaded ? <Line data={this.state.latest_graph_recovered} options={{ maintainAspectRatio: false }} redraw/> : ''}
           </Col>
           <Col lg={2} md={2} sm={12} xs={12}></Col>
-        </Row>
+        </Row></div> : ''}
         {/* Chart END */}
       </div>
     );

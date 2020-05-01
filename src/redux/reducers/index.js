@@ -6,7 +6,7 @@ const initialState = {
   location: {},
 };
 
-function rootReducer(state = initialState, action) {
+function rootReducer(state = initialState, action) { // payload received as variable => action
   if(action.type === FETCH_LOCATIONS) {
     state.locations = [];
     let object = state.locations.concat(action.payload);
@@ -17,9 +17,9 @@ function rootReducer(state = initialState, action) {
     state.location = [];
     let object = state.location.concat(action.payload);
     let new_object = Object.assign({}, state, object[0]);
-    return new_object;
+    return new_object; 
   }
-  return state;
+  return state;  // return to mapStateToProps function @List.js 
 };
 
 export default rootReducer;

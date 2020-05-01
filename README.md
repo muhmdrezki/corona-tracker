@@ -1,3 +1,13 @@
+## Corona Tracker
+
+Features : 
+<ul>
+  <li> Display number of cases worldwide (Confirmed, Deaths, Recovered) </li>
+  <li> Display number of cases on selected country (Confirmed, Deaths, Recovered) </li>
+  <li> Display cases on chart </li>
+  <li> Display cases whereabouts </li>
+</ul>
+
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts

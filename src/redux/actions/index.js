@@ -14,7 +14,7 @@ export function fetchLocations() {
     return axios.get( 'https://coronavirus-tracker-api.herokuapp.com/v2/locations', config )
     .then(res => {
       if(res.data) {
-        dispatch({ type: FETCH_LOCATIONS, payload: res.data });
+        dispatch({ type: FETCH_LOCATIONS, payload: res.data }); // to reducer based on type
       }
     }).catch(err => {
       dispatch({type: FETCH_LOCATIONS, payload: err });
@@ -32,7 +32,7 @@ export function filterLocation(id) {
     return axios.get( 'https://coronavirus-tracker-api.herokuapp.com/v2/locations/' + id + '?source=jhu&timelines=true', config )
     .then(res => {
       if(res.data) {
-        dispatch({ type: FILTER_LOCATION, payload: res.data });
+        dispatch({ type: FILTER_LOCATION, payload: res.data }); // to reducer based on type
       }
     }).catch(err => {
       dispatch({type: FILTER_LOCATION, payload: err });

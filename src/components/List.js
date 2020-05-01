@@ -45,14 +45,16 @@ export class List extends Component {
     }
   }
 
+  // on load
   componentDidMount() {
-    this.props.fetchLocations().then(res => {
+    this.props.fetchLocations().then(res => { // call actions
       if(this.props) {
         this.setState({ loaded: true });
       }
     });
   }
 
+  // when click one of table's row
   getData(data) {
     this.setState({
       id: data.id,
@@ -66,11 +68,11 @@ export class List extends Component {
     });
     this._handleChange(data.id, 'getdata');
   }
-  
+  // handle dropdown change
   _handleChange = (id, state) => {
-    this.setState({ loaded: false });
-    if(id === "") {
-      this.props.fetchLocations().then(res => {
+    this.setState({ loaded: false }); // load state done
+    if(id === "") { // if id is null or empty, load world wide data
+      this.props.fetchLocations().then(res => { // call actions => fetchLocations()
         if(this.props) {
           this.setState({ 
             id: null,
@@ -84,10 +86,12 @@ export class List extends Component {
         }
       });
     } else {
-      this.props.filterLocation(id).then(res => {
+      // if id is not null, load data based on id
+      this.props.filterLocation(id).then(res => { // call actions => filterLocation()
         if(this.props) {
           this.setState({ loaded: true, filter: true });
           this.setState({ selectLocation: this.props.location.id });
+          // map timeline object for line chart - START
           let labels_confirmed, labels_confirmed_formatted = []; 
           let labels_deaths, labels_deaths_formatted = [];
           let labels_recovered, labels_recovered_formatted = [];
@@ -123,6 +127,7 @@ export class List extends Component {
               ]
             }
           });
+          // map timeline object for line chart - END
           if(state !== 'getdata') {
             this.getData(this.props.location);
           }
@@ -134,7 +139,8 @@ export class List extends Component {
   render() {
     return (
       <div style={{padding:'1%',marginTop:"0.5%"}}>
-        <Row>
+        {/* Map and dropdown START */}
+        <Row> 
           <Col lg={3} md={3} sm={12} xs={12}>
             <Card>
               <Card.Body>
@@ -214,10 +220,12 @@ export class List extends Component {
             </div>
           </Col>
         </Row>
+        {/* Map and dropdown END */}
         <hr/>
         <div className="text-center">
           <h4> CASES </h4>
         </div>
+        {/* Table START */}
         <Row>
           <Col lg={2} md={2} sm={12} xs={12}></Col>
           <Col lg={8} md={8} sm={12} xs={12}>            
@@ -269,8 +277,10 @@ export class List extends Component {
           </Col>
           <Col lg={2} md={2} sm={12} xs={12}></Col>
         </Row>
+        {/* Table END */}
         <hr/>
         <h5 className="text-center"> MORE STATS (CHOOSE COUNTRY FIRST)</h5>
+        {/* Chart START */}
         <Row style={{marginTop:"20px", height:"300px"}}>
           <Col lg={2} md={2} sm={12} xs={12}></Col>
           <Col lg={8} md={8} sm={12} xs={12}>
@@ -292,6 +302,7 @@ export class List extends Component {
           </Col>
           <Col lg={2} md={2} sm={12} xs={12}></Col>
         </Row>
+        {/* Chart END */}
       </div>
     );
   }

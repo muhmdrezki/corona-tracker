@@ -247,7 +247,7 @@ export class List extends Component {
                       <td>{el.latest.confirmed}</td>
                       <td>{el.latest.deaths}</td>
                       <td>{el.latest.recovered}</td>
-                      <td>{el.last_updated}</td>
+                      <td>{moment(el.last_updated).format('LLLL')}</td>
                     </tr>
                   ))  : <tr><td colSpan="5" align="center"><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner></td></tr>}
                 </tbody>
@@ -269,7 +269,7 @@ export class List extends Component {
                       <td>{this.props.location.latest.confirmed}</td>
                       <td>{this.props.location.latest.deaths}</td>
                       <td>{this.props.location.latest.recovered}</td>
-                      <td>{this.props.location.last_updated}</td>
+                      <td>{moment(this.props.location.last_updated).format('LLLL')}</td>
                     </tr>
                   : <tr><td colSpan="5" align="center"><Spinner style={{marginTop:"10px", marginBottom:"10px"}} animation="border" role="status"><span className="sr-only">Loading....</span></Spinner></td></tr>}
                 </tbody>
